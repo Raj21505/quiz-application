@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PIP_DEFAULT_TIMEOUT=120
+ENV PIP_RETRIES=20
+
+WORKDIR /app
+
+# Install dependencies first for better layer caching
+COPY backend/requirements.txt /app/backend/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+	python -m pip install --upgrade pip && \
+	python -m pip install --retries 20 --timeout 120 --resume-retries 20 -r /app/backend/requirements.txt
+
+# Copy only backend source code
+COPY backend /app/backend
+
+# Set Python path so backend module is found
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]

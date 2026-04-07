@@ -1,0 +1,47 @@
+# Render Blueprint variant: backend is private-only, frontend is public.
+# Use this file when you want users to access only Streamlit externally.
+# After first deploy, set secret values in Render dashboard for env vars marked sync: false.
+
+databases:
+  - name: quiz-postgres
+    plan: starter
+    databaseName: myquiz
+    user: myuser
+
+services:
+  - type: pserv
+    name: quiz-backend
+    runtime: docker
+    plan: starter
+    dockerContext: .
+    dockerfilePath: ./docker/Dockerfile.backend
+    autoDeploy: true
+    healthCheckPath: /questions
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quiz-postgres
+          property: connectionString
+      - key: PUBLIC_BASE_URL
+        value: http://quiz-backend:8000
+      - key: FIREBASE_DB_URL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+
+  - type: web
+    name: quiz-frontend
+    runtime: docker
+    plan: starter
+    dockerContext: .
+    dockerfilePath: ./docker/Dockerfile.frontend
+    autoDeploy: true
+    envVars:
+      - key: API_BASE
+        value: http://quiz-backend:8000
+      - key: FIREBASE_WEB_API_KEY
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

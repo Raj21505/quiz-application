@@ -1,0 +1,46 @@
+# Render Blueprint: creates 1 Postgres DB + backend web service + frontend web service
+# After first deploy, set secret values in Render dashboard for env vars marked sync: false.
+
+databases:
+  - name: quiz-postgres
+    plan: starter
+    databaseName: myquiz
+    user: myuser
+
+services:
+  - type: web
+    name: quiz-backend
+    runtime: docker
+    plan: starter
+    dockerContext: .
+    dockerfilePath: ./docker/Dockerfile.backend
+    autoDeploy: true
+    healthCheckPath: /questions
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quiz-postgres
+          property: connectionString
+      - key: PUBLIC_BASE_URL
+        value: https://quiz-backend.onrender.com
+      - key: FIREBASE_DB_URL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+
+  - type: web
+    name: quiz-frontend
+    runtime: docker
+    plan: starter
+    dockerContext: .
+    dockerfilePath: ./docker/Dockerfile.frontend
+    autoDeploy: true
+    envVars:
+      - key: API_BASE
+        value: https://quiz-backend.onrender.com
+      - key: FIREBASE_WEB_API_KEY
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
