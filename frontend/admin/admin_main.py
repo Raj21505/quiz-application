@@ -19,10 +19,10 @@ class AdminQuiz:
     def run(self):  
         st.header("👩‍💼 Admin Panel")
 
-        if "authenticated" not in st.session_state:
-            st.session_state.authenticated = False
+        if "admin_authenticated" not in st.session_state:
+            st.session_state.admin_authenticated = False
 
-        if not st.session_state.authenticated:
+        if not st.session_state.admin_authenticated:
             self._login_ui()
             return
 
@@ -38,7 +38,7 @@ class AdminQuiz:
             submitted = st.form_submit_button("Login")
             if submitted:
                 if self._authenticate(username.strip(), password):
-                    st.session_state.authenticated = True
+                    st.session_state.admin_authenticated = True
                     st.session_state.admin_action = "menu"
                     st.rerun()
                 else:
@@ -54,7 +54,30 @@ class AdminQuiz:
         )
         
         if choice == "Logout":
-            st.session_state.clear()
+            st.session_state.admin_authenticated = False
+            st.session_state.admin_action = "menu"
+            for key in [
+                "menu_select",
+                "add_done",
+                "delete_done",
+                "update_done",
+                "delete_select",
+                "update_select",
+                "update_field",
+                "update_new_value",
+                "update_new_ans",
+                "add_q_question",
+                "add_q_a",
+                "add_q_b",
+                "add_q_c",
+                "add_q_d",
+                "add_q_ans",
+                "repeat_add_radio",
+                "repeat_delete_radio",
+                "repeat_update_radio",
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
             st.rerun()
             return
 

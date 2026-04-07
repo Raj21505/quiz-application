@@ -26,8 +26,10 @@ class QuizApp:
             st.session_state.id_token = None
         if "firebase_email" not in st.session_state:
             st.session_state.firebase_email = None
-        if "authenticated" not in st.session_state:
-            st.session_state.authenticated = False
+        if "firebase_authenticated" not in st.session_state:
+            st.session_state.firebase_authenticated = False
+        if "admin_authenticated" not in st.session_state:
+            st.session_state.admin_authenticated = False
 
     def _auth_ui(self):
         api_key = os.getenv("FIREBASE_WEB_API_KEY", "")
@@ -40,7 +42,8 @@ class QuizApp:
             if st.button("Logout"):
                 st.session_state.id_token = None
                 st.session_state.firebase_email = None
-                st.session_state.authenticated = False
+                st.session_state.firebase_authenticated = False
+                st.session_state.admin_authenticated = False
                 st.rerun()
             return True
 
@@ -56,7 +59,7 @@ class QuizApp:
                     if ok:
                         st.session_state.id_token = data.get("idToken")
                         st.session_state.firebase_email = data.get("email")
-                        st.session_state.authenticated = True
+                        st.session_state.firebase_authenticated = True
                         st.rerun()
                     else:
                         st.error(f"Login failed: {err}")
@@ -93,7 +96,6 @@ class QuizApp:
         role = st.selectbox("Select your role", ["Select", "Admin", "Player", "Leave"], index=0)
 
         if role == "Admin":
-            st.session_state.authenticated = True
             admin = AdminQuiz()
             admin.run()
 
